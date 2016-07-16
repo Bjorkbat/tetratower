@@ -679,12 +679,15 @@
 
 	var _player = __webpack_require__(6);
 
+	var _blocks = __webpack_require__(1);
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var player;
 
 	var scene;
 	var world;
+	var blocks = [];
 
 	var Game = exports.Game = (function () {
 	  function Game(s, w) {
@@ -696,12 +699,93 @@
 	    // Plop down the player character
 	    player = new _player.Player();
 	    scene.add(player);
-	    player.position.y = 12;
+
+	    // Add a block
+	    var block = new _blocks.Block();
+	    block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
+	    scene.add(block);
+	    world.addBody(block.body);
+	    blocks.push(block);
 	  }
 
 	  _createClass(Game, [{
 	    key: 'update',
 	    value: function update() {
+
+	      // Handle player movement
+	      if (player.moveForward) {
+
+	        switch (player.orientation) {
+	          case "forward":
+	            break;
+	          case "backward":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+	            break;
+	          case "left":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
+	            break;
+	          case "right":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2);
+	        }
+	        player.orientation = "forward";
+	        player.translateZ(1);
+	      } else if (player.moveBackward) {
+
+	        switch (player.orientation) {
+	          case "forward":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+	            break;
+	          case "backward":
+	            break;
+	          case "left":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2);
+	            break;
+	          case "right":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
+	        }
+	        player.orientation = "backward";
+	        player.translateZ(1);
+	      } else if (player.moveLeft) {
+
+	        switch (player.orientation) {
+	          case "forward":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2);
+	            break;
+	          case "backward":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
+	            break;
+	          case "left":
+	            break;
+	          case "right":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+	            break;
+	        }
+	        player.orientation = "left";
+	        player.translateZ(1);
+	      } else if (player.moveRight) {
+
+	        switch (player.orientation) {
+	          case "forward":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
+	            break;
+	          case "backward":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2);
+	            break;
+	          case "left":
+	            player.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+	            break;
+	          case "right":
+	            break;
+	        }
+	        player.orientation = "right";
+	        player.translateZ(1);
+	      }
+
+	      // Update blocks
+	      for (var i = 0; i < blocks.length; i++) {
+	        blocks[i].update();
+	      }
+
 	      return false;
 	    }
 	  }]);
@@ -745,6 +829,14 @@
 	var Player = exports.Player = function Player() {
 	  THREE.Object3D.call(this);
 
+	  this.position.y += BODY_HEIGHT / 2 + LEG_HEIGHT / 2 + HEAD_HEIGHT / 2 + HEAD_HEIGHT;
+
+	  this.moveLeft = false;
+	  this.moveRight = false;
+	  this.moveUp = false;
+	  this.moveDown = false;
+	  this.orientation = "backward";
+
 	  var scope = this;
 
 	  var legGeo = new THREE.BoxGeometry(Consts.BLOCK_WIDTH / 2, LEG_HEIGHT, Consts.BLOCK_WIDTH / 2);
@@ -786,10 +878,10 @@
 	      textureURL = "/img/tetratowerarm_white.png";
 	      break;
 	    case SKIN_COLORS[1]:
-	      textureURL = "/img/tetratowerarm_white.png";
+	      textureURL = "/img/tetratowerarm_brown.png";
 	      break;
 	    case SKIN_COLORS[2]:
-	      textureURL = "/img/tetratowerarm_white.png";
+	      textureURL = "/img/tetratowerarm_black.png";
 	      break;
 	    default:
 	      textureURL = "/img/tetratowerarm.png";
@@ -850,10 +942,83 @@
 	  head.add(hatBrim);
 	  hatBrim.translateZ(HEAD_HEIGHT * 1.05 / 2 + HEAD_HEIGHT * 0.525 / 2);
 	  hatBrim.translateY(HEAD_HEIGHT / 2);
+
+	  // Add some listeners
+	  var onKeyDown = function onKeyDown(event) {
+
+	    switch (event.keyCode) {
+	      case 38: // up
+	      case 87:
+	        // w
+	        scope.moveForward = true;
+	        break;
+
+	      case 40: // down
+	      case 83:
+	        // s
+	        scope.moveBackward = true;
+	        break;
+
+	      case 37: // left
+	      case 65:
+	        // a
+	        scope.moveLeft = true;
+	        break;
+
+	      case 39: // right
+	      case 68:
+	        // d
+	        scope.moveRight = true;
+	        break;
+	    }
+	  };
+
+	  var onKeyUp = function onKeyUp(event) {
+
+	    switch (event.keyCode) {
+	      case 38: // up
+	      case 87:
+	        // w
+	        scope.moveForward = false;
+	        break;
+
+	      case 40: // down
+	      case 83:
+	        // s
+	        scope.moveBackward = false;
+	        break;
+
+	      case 37: // left
+	      case 65:
+	        // a
+	        scope.moveLeft = false;
+	        break;
+
+	      case 39: // right
+	      case 68:
+	        // d
+	        scope.moveRight = false;
+	        break;
+	    }
+	  };
+
+	  document.addEventListener('keydown', onKeyDown, false);
+	  document.addEventListener('keyup', onKeyUp, false);
 	};
 
 	Player.prototype = new THREE.Object3D();
 	Player.prototype.constructor = Player;
+
+	THREE.Object3D.prototype.worldToLocal = function (vector) {
+	  if (!this.__inverseMatrixWorld) this.__inverseMatrixWorld = new THREE.Matrix4();
+	  return vector.applyMatrix4(this.__inverseMatrixWorld.getInverse(this.matrixWorld));
+	};
+
+	THREE.Object3D.prototype.lookAtWorld = function (vector) {
+	  vector = vector.clone();
+	  this.parent.worldToLocal(vector);
+	  this.lookAt(vector);
+	};
 
 /***/ },
 /* 7 */
