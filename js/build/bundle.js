@@ -541,7 +541,7 @@
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -557,6 +557,12 @@
 	var clock;
 	var elapsed = 0;
 
+	var title;
+	var menu;
+	var menuStart;
+	var menuHow;
+	var menuCredits;
+
 	var setupIntro = exports.setupIntro = function setupIntro(scene, world) {
 
 	  // Go ahead and add a single block to the block array.  We'll add more.
@@ -566,7 +572,25 @@
 	  world.addBody(block.body);
 	  blocks.push(block);
 
+	  // Start the block
 	  clock = new THREE.Clock(true);
+
+	  // Add a nifty title
+	  title = $("<div class='title'><h1>TetraTower</h1></div>");
+	  $("body").append(title);
+
+	  // And the menu
+	  menu = $("<div class='menu'></div>");
+	  $("body").append(menu);
+
+	  menuStart = $("<a href='#start' class='h2'>Start Game</a>");
+	  $(menu).append(menuStart);
+
+	  menuHow = $("<a href='#how' class='h2'>How to Play</a>");
+	  $(menu).append(menuHow);
+
+	  menuCredits = $("<a href='#credits' class='h2'>Credits</a>");
+	  $(menu).append(menuCredits);
 	};
 
 	var update = exports.update = function update(scene, world) {
