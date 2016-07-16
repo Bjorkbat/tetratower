@@ -7,11 +7,11 @@ const RED = 0xFF2E00;;
 const BLUE = 0x23A8FC;
 const YELLOW = 0xFFD000;
 
-const PURPLE = 0x000000;
-const GREEN = 0x000000;
-const ORANGE = 0x000000;
+const PURPLE = 0xA600D9;
+const GREEN = 0x0FD64C;
+const ORANGE = 0xFA7E00;
 
-const COLORS = [RED, BLUE, YELLOW];
+const COLORS = [RED, BLUE, YELLOW, PURPLE, GREEN, ORANGE];
 const SHAPES = ["i", "o", "t", "j", "l", "s", "z"];
 
 const BLOCK_WIDTH = 2.5;
@@ -173,7 +173,6 @@ var makeS = function(color) {
   var bottom = new THREE.Mesh(geo, material);
   object.add(bottom);
   bottom.translateX(-BLOCK_WIDTH / 2);
-  bottom.translateY(BLOCK_WIDTH);
 
   return object;
 }

@@ -181,11 +181,11 @@
 	var BLUE = 0x23A8FC;
 	var YELLOW = 0xFFD000;
 
-	var PURPLE = 0x000000;
-	var GREEN = 0x000000;
-	var ORANGE = 0x000000;
+	var PURPLE = 0xA600D9;
+	var GREEN = 0x0FD64C;
+	var ORANGE = 0xFA7E00;
 
-	var COLORS = [RED, BLUE, YELLOW];
+	var COLORS = [RED, BLUE, YELLOW, PURPLE, GREEN, ORANGE];
 	var SHAPES = ["i", "o", "t", "j", "l", "s", "z"];
 
 	var BLOCK_WIDTH = 2.5;
@@ -340,7 +340,6 @@
 	  var bottom = new THREE.Mesh(geo, material);
 	  object.add(bottom);
 	  bottom.translateX(-BLOCK_WIDTH / 2);
-	  bottom.translateY(BLOCK_WIDTH);
 
 	  return object;
 	};
