@@ -1,112 +1,43 @@
 'use strict';
 
-var _blocks = require('./blocks');
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Game = undefined;
 
-var _grid = require('./grid');
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * JS for game proper.  Adds player character, starts the block falling process,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * all that stuff
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * * * * */
 
-var _intro = require('./intro');
+var _player = require('./player');
 
-var Intro = _interopRequireWildcard(_intro);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var _physics = require('./physics');
-
-var Physics = _interopRequireWildcard(_physics);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/**
- * Main file.  Handles game state transitions and the like.
- * * * * */
+var player;
 
 var scene;
-var renderer;
-var aspect;
-var d;
-var camera;
-
-var ambientLight;
-var directLight;
-
-var groundPlane;
-var grid;
-
-/** PHYSICS **/
 var world;
 
-var GROUND_WIDTH = 50;
+var Game = exports.Game = (function () {
+  function Game(s, w) {
+    _classCallCheck(this, Game);
 
-// Sets up the camera, scene, and a simple intro screen
-var init = function init() {
+    scene = s;
+    world = w;
 
-  // Init scene and camera
-  scene = new THREE.Scene();
-  aspect = window.innerWidth / window.innerHeight;
-  d = 20;
-  camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, -500, 1000);
+    // Plop down the player character
+    player = new _player.Player();
+    scene.add(player);
+    player.position.y = 12;
+  }
 
-  renderer = new THREE.WebGLRenderer({ alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0xFFFFFF, 0);
-  document.body.appendChild(renderer.domElement);
+  _createClass(Game, [{
+    key: 'update',
+    value: function update() {
+      return false;
+    }
+  }]);
 
-  // Position camera.  Let's try 200, 200, 200
-  camera.position.x = 200;
-  camera.position.y = 200;
-  camera.position.z = 200;
-  camera.zoom = 0.75;
-  camera.updateProjectionMatrix();
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-  scene.add(camera);
-
-  // Add some light
-  ambientLight = new THREE.AmbientLight(0x888888);
-  scene.add(ambientLight);
-
-  directLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  directLight.position.set(0, 1, 0);
-  scene.add(directLight);
-
-  // Add a ground plane.  Make it white
-  var groundPlaneGeo = new THREE.PlaneGeometry(GROUND_WIDTH, GROUND_WIDTH);
-  var groundPlaneMat = new THREE.MeshBasicMaterial({ color: 0xFEFEFE });
-  groundPlane = new THREE.Mesh(groundPlaneGeo, groundPlaneMat);
-  groundPlane.rotation.x = -Math.PI / 2;
-  scene.add(groundPlane);
-
-  // Add a grid
-  grid = new _grid.Grid();
-  scene.add(grid);
-
-  // Now define our physics world
-  world = new CANNON.World();
-  world.gravity.set(0, -9.82, 0);
-  world.addContactMaterial(Physics.roughCM);
-  world.broadphase = new CANNON.NaiveBroadphase();
-
-  // And define a ground plane
-  var groundShape = new CANNON.Plane();
-  var groundBody = new CANNON.Body({ mass: 0, shape: groundShape, material: Physics.roughMaterial });
-  groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-  world.add(groundBody);
-
-  // Setup the intro screen
-  Intro.setupIntro(scene, world);
-
-  console.log(world);
-  render();
-};
-
-var render = function render() {
-  requestAnimationFrame(render);
-
-  // Step the world
-  world.step(1 / 20);
-
-  // Update everything
-  Intro.update(scene, world);
-
-  renderer.render(scene, camera);
-};
-
-init();
+  return Game;
+})();
