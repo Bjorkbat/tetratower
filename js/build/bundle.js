@@ -52,7 +52,7 @@
 
 	var _intro = __webpack_require__(4);
 
-	var Intro = _interopRequireWildcard(_intro);
+	var _game = __webpack_require__(5);
 
 	var _physics = __webpack_require__(2);
 
@@ -60,11 +60,10 @@
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-	/**
-	 * Main file.  Handles game state transitions and the like.
-	 * * * * */
+	var scene; /**
+	            * Main file.  Handles game state transitions and the like.
+	            * * * * */
 
-	var scene;
 	var renderer;
 	var aspect;
 	var d;
@@ -79,7 +78,9 @@
 	/** PHYSICS **/
 	var world;
 
-	var GROUND_WIDTH = 50;
+	var state;
+
+	var GROUND_WIDTH = 60;
 
 	// Sets up the camera, scene, and a simple intro screen
 	var init = function init() {
@@ -106,10 +107,10 @@
 	  scene.add(camera);
 
 	  // Add some light
-	  ambientLight = new THREE.AmbientLight(0x888888);
+	  ambientLight = new THREE.AmbientLight(0xCCCCCC);
 	  scene.add(ambientLight);
 
-	  directLight = new THREE.DirectionalLight(0xffffff, 0.5);
+	  directLight = new THREE.DirectionalLight(0xffffff, 0.75);
 	  directLight.position.set(0, 1, 0);
 	  scene.add(directLight);
 
@@ -118,6 +119,7 @@
 	  var groundPlaneMat = new THREE.MeshBasicMaterial({ color: 0xFEFEFE });
 	  groundPlane = new THREE.Mesh(groundPlaneGeo, groundPlaneMat);
 	  groundPlane.rotation.x = -Math.PI / 2;
+	  groundPlane.position.y -= 1;
 	  scene.add(groundPlane);
 
 	  // Add a grid
@@ -137,9 +139,8 @@
 	  world.add(groundBody);
 
 	  // Setup the intro screen
-	  Intro.setupIntro(scene, world);
+	  state = new _intro.Intro(scene, world);
 
-	  console.log(world);
 	  render();
 	};
 
@@ -150,7 +151,11 @@
 	  world.step(1 / 20);
 
 	  // Update everything
-	  Intro.update(scene, world);
+	  var newState = state.update();
+	  if (newState) {
+
+	    state = new _game.Game(scene, world);
+	  }
 
 	  renderer.render(scene, camera);
 	};
@@ -505,8 +510,8 @@
 	 * having it in the game file
 	 * * * * */
 
-	var GROUND_WIDTH = 50;
-	var GRID_SPACING = 2.5;
+	var GROUND_WIDTH = 60;
+	var GRID_SPACING = 5;
 
 	var Grid = exports.Grid = function Grid() {
 	  THREE.Object3D.call(this);
@@ -546,14 +551,17 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.update = exports.setupIntro = undefined;
+	exports.Intro = undefined;
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })(); /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * JS for adding an intro screen (and removing it) to the game
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * * * * */
 
 	var _blocks = __webpack_require__(1);
 
-	var blocks = []; /**
-	                  * JS for adding an intro screen (and removing it) to the game
-	                  * * * * */
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+	var blocks = [];
 	var clock;
 	var elapsed = 0;
 
@@ -563,54 +571,305 @@
 	var menuHow;
 	var menuCredits;
 
-	var setupIntro = exports.setupIntro = function setupIntro(scene, world) {
+	var scene;
+	var world;
+	var stop = false;
 
-	  // Go ahead and add a single block to the block array.  We'll add more.
-	  var block = new _blocks.Block();
-	  block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
-	  scene.add(block);
-	  world.addBody(block.body);
-	  blocks.push(block);
+	var Intro = exports.Intro = (function () {
+	  function Intro(s, w) {
+	    _classCallCheck(this, Intro);
 
-	  // Start the block
-	  clock = new THREE.Clock(true);
+	    scene = s;
+	    world = w;
 
-	  // Add a nifty title
-	  title = $("<div class='title'><h1>TetraTower</h1></div>");
-	  $("body").append(title);
-
-	  // And the menu
-	  menu = $("<div class='menu'></div>");
-	  $("body").append(menu);
-
-	  menuStart = $("<a href='#start' class='h2'>Start Game</a>");
-	  $(menu).append(menuStart);
-
-	  menuHow = $("<a href='#how' class='h2'>How to Play</a>");
-	  $(menu).append(menuHow);
-
-	  menuCredits = $("<a href='#credits' class='h2'>Credits</a>");
-	  $(menu).append(menuCredits);
-	};
-
-	var update = exports.update = function update(scene, world) {
-
-	  // We add new blocks every now and then.
-	  elapsed += clock.getDelta();
-	  if (elapsed > 0.5 && blocks.length < 10) {
+	    // Go ahead and add a single block to the block array.  We'll add more.
 	    var block = new _blocks.Block();
 	    block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
 	    scene.add(block);
 	    world.addBody(block.body);
 	    blocks.push(block);
 
-	    elapsed = 0;
+	    // Start the block
+	    clock = new THREE.Clock(true);
+
+	    // Add a nifty title
+	    title = $("<div class='title'><h1>TetraTower</h1></div>");
+	    $("body").append(title);
+
+	    // And the menu
+	    menu = $("<div class='menu'></div>");
+	    $("body").append(menu);
+
+	    menuStart = $("<a href='#start' class='h2' autofocus>Start Game</a>");
+	    $(menu).append(menuStart);
+	    $(menuStart).click(this.startGame);
+
+	    menuHow = $("<a href='#how' class='h2'>How to Play</a>");
+	    $(menu).append(menuHow);
+
+	    menuCredits = $("<a href='#credits' class='h2'>Credits</a>");
+	    $(menu).append(menuCredits);
 	  }
 
-	  for (var i = 0; i < blocks.length; i++) {
-	    blocks[i].update();
+	  _createClass(Intro, [{
+	    key: "update",
+	    value: function update() {
+
+	      if (stop) {
+	        return true;
+	      }
+
+	      // We add new blocks every now and then.
+	      elapsed += clock.getDelta();
+	      if (elapsed > 0.5 && blocks.length < 10) {
+	        var block = new _blocks.Block();
+	        block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
+	        scene.add(block);
+	        world.addBody(block.body);
+	        blocks.push(block);
+
+	        elapsed = 0;
+	      }
+
+	      for (var i = 0; i < blocks.length; i++) {
+	        blocks[i].update();
+	      }
+
+	      return false;
+	    }
+
+	    // Cleans up all the intro stuff, tells game to start new game
+
+	  }, {
+	    key: "startGame",
+	    value: function startGame() {
+
+	      // Remove all the text stuff
+	      $(".title").remove();
+	      $(".menu").remove();
+
+	      // Remove the blocks
+	      for (var i = 0; i < blocks.length; i++) {
+	        scene.remove(blocks[i]);
+	        world.remove(blocks[i].body);
+	      }
+
+	      stop = true;
+	    }
+	  }]);
+
+	  return Intro;
+	})();
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Game = undefined;
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })(); /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * JS for game proper.  Adds player character, starts the block falling process,
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * all that stuff
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * * * * */
+
+	var _player = __webpack_require__(6);
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var player;
+
+	var scene;
+	var world;
+
+	var Game = exports.Game = (function () {
+	  function Game(s, w) {
+	    _classCallCheck(this, Game);
+
+	    scene = s;
+	    world = w;
+
+	    // Plop down the player character
+	    player = new _player.Player();
+	    scene.add(player);
+	    player.position.y = 12;
 	  }
+
+	  _createClass(Game, [{
+	    key: 'update',
+	    value: function update() {
+	      return false;
+	    }
+	  }]);
+
+	  return Game;
+	})();
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Player = undefined;
+
+	var _consts = __webpack_require__(7);
+
+	var Consts = _interopRequireWildcard(_consts);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var leftLeg; /**
+	              * JS for the player character.
+	              * * * * */
+
+	var rightLeg;
+
+	var leftArm;
+	var rightArm;
+
+	var BODY_HEIGHT = 5;
+	var LEG_HEIGHT = 5;
+	var HEAD_HEIGHT = Consts.BLOCK_WIDTH * (3 / 5);
+	var SKIN_COLORS = [0xFADCAB, 0x9E7245, 0x4F3F2F];
+
+	var BASE_MAT = new THREE.MeshLambertMaterial({ color: 0xFF0000 });
+
+	var Player = exports.Player = function Player() {
+	  THREE.Object3D.call(this);
+
+	  var scope = this;
+
+	  var legGeo = new THREE.BoxGeometry(Consts.BLOCK_WIDTH / 2, LEG_HEIGHT, Consts.BLOCK_WIDTH / 2);
+	  var armGeo = new THREE.BoxGeometry(Consts.BLOCK_WIDTH / 2, BODY_HEIGHT, Consts.BLOCK_WIDTH / 2);
+
+	  // Base mat(s)
+	  var redMaterial = new THREE.MeshLambertMaterial({ color: 0xFF2E00 });
+	  var blueMaterial = new THREE.MeshLambertMaterial({ color: 0x23A8FC });
+	  var yellowMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD000 });
+
+	  // Skin color mat, only used for head
+	  var skinColor = SKIN_COLORS[Math.floor(Math.random() * SKIN_COLORS.length)];
+	  var skinMat = new THREE.MeshLambertMaterial({ color: skinColor });
+
+	  // Body material
+	  var bodyFrontMat = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+	  var bodyFrontTexture = new THREE.TextureLoader().load("img/tetratowerbodyfront.png", function (texture) {
+
+	    bodyFrontMat.map = texture;
+	    bodyFrontMat.needsUpdate = true;
+	  });
+	  var bodyMat = new THREE.MultiMaterial([redMaterial, redMaterial, redMaterial, redMaterial, bodyFrontMat, bodyFrontMat]);
+
+	  var armSideMat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+	  var armTopMat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+	  var armMat = new THREE.MultiMaterial([armSideMat, armSideMat, armTopMat, armTopMat, armSideMat, armSideMat]);
+
+	  // Leg material
+	  var legSideMat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+	  var legMat = new THREE.MultiMaterial([legSideMat, legSideMat, blueMaterial, blueMaterial, legSideMat, legSideMat]);
+	  var legTexture = new THREE.TextureLoader().load("/img/tetratowerleg.png", function (texture) {
+	    legSideMat.map = texture;
+	    legSideMat.needsUpdate = true;
+	  });
+
+	  var textureURL;
+	  switch (skinColor) {
+	    case SKIN_COLORS[0]:
+	      textureURL = "/img/tetratowerarm_white.png";
+	      break;
+	    case SKIN_COLORS[1]:
+	      textureURL = "/img/tetratowerarm_white.png";
+	      break;
+	    case SKIN_COLORS[2]:
+	      textureURL = "/img/tetratowerarm_white.png";
+	      break;
+	    default:
+	      textureURL = "/img/tetratowerarm.png";
+	      break;
+	  }
+
+	  var armTexture = new THREE.TextureLoader().load(textureURL, function (texture) {
+
+	    armSideMat.map = texture;
+	    armSideMat.needsUpdate = true;
+	  });
+
+	  var armTopTexture = new THREE.TextureLoader().load("img/tetratowerarmtop.png", function (texture) {
+
+	    armTopMat.map = texture;
+	    armTopMat.needsUpdate = true;
+	  });
+
+	  // Create a body
+	  var bodyGeo = new THREE.BoxGeometry(Consts.BLOCK_WIDTH, BODY_HEIGHT, Consts.BLOCK_WIDTH / 2);
+	  var body = new THREE.Mesh(bodyGeo, bodyMat);
+	  this.add(body);
+
+	  // Create some leggy legs
+	  leftLeg = new THREE.Mesh(legGeo, legMat);
+	  this.add(leftLeg);
+	  leftLeg.translateX(-Consts.BLOCK_WIDTH / 4);
+	  leftLeg.translateY(-(LEG_HEIGHT + BODY_HEIGHT) / 2);
+
+	  rightLeg = new THREE.Mesh(legGeo, legMat);
+	  this.add(rightLeg);
+	  rightLeg.translateX(Consts.BLOCK_WIDTH / 4);
+	  rightLeg.translateY(-(LEG_HEIGHT + BODY_HEIGHT) / 2);
+
+	  // Create the arms
+	  leftArm = new THREE.Mesh(armGeo, armMat);
+	  this.add(leftArm);
+	  leftArm.translateX(-(Consts.BLOCK_WIDTH / 4 + Consts.BLOCK_WIDTH / 2));
+
+	  rightArm = new THREE.Mesh(armGeo, armMat);
+	  this.add(rightArm);
+	  rightArm.translateX(Consts.BLOCK_WIDTH / 4 + Consts.BLOCK_WIDTH / 2);
+
+	  // Now add a head
+	  var headGeo = new THREE.BoxGeometry(Consts.BLOCK_WIDTH * (3 / 5), Consts.BLOCK_WIDTH * (3 / 5), Consts.BLOCK_WIDTH * (3 / 5));
+	  var head = new THREE.Mesh(headGeo, skinMat);
+	  this.add(head);
+	  head.translateY((BODY_HEIGHT + HEAD_HEIGHT) / 2);
+
+	  // And a fashionable hat
+	  var hatBodyGeo = new THREE.BoxGeometry(HEAD_HEIGHT * 1.05, HEAD_HEIGHT * (4 / 5), HEAD_HEIGHT * 1.05);
+	  var hatBody = new THREE.Mesh(hatBodyGeo, yellowMaterial);
+	  head.add(hatBody);
+	  hatBody.translateY(HEAD_HEIGHT * (4 / 5));
+
+	  var hatBrimGeo = new THREE.BoxGeometry(HEAD_HEIGHT * 1.05, HEAD_HEIGHT / 5, HEAD_HEIGHT * 0.525);
+	  var hatBrim = new THREE.Mesh(hatBrimGeo, yellowMaterial);
+	  head.add(hatBrim);
+	  hatBrim.translateZ(HEAD_HEIGHT * 1.05 / 2 + HEAD_HEIGHT * 0.525 / 2);
+	  hatBrim.translateY(HEAD_HEIGHT / 2);
 	};
+
+	Player.prototype = new THREE.Object3D();
+	Player.prototype.constructor = Player;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	/**
+	 * Useful constants and shit
+	 * * * * */
+
+	var GROUND_WIDTH = exports.GROUND_WIDTH = 50;
+	var BLOCK_WIDTH = exports.BLOCK_WIDTH = 2.5;
 
 /***/ }
 /******/ ]);

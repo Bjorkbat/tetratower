@@ -3,14 +3,17 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.update = exports.setupIntro = undefined;
+exports.Intro = undefined;
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * JS for adding an intro screen (and removing it) to the game
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * * * * */
 
 var _blocks = require("./blocks.js");
 
-var blocks = []; /**
-                  * JS for adding an intro screen (and removing it) to the game
-                  * * * * */
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var blocks = [];
 var clock;
 var elapsed = 0;
 
@@ -20,51 +23,92 @@ var menuStart;
 var menuHow;
 var menuCredits;
 
-var setupIntro = exports.setupIntro = function setupIntro(scene, world) {
+var scene;
+var world;
+var stop = false;
 
-  // Go ahead and add a single block to the block array.  We'll add more.
-  var block = new _blocks.Block();
-  block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
-  scene.add(block);
-  world.addBody(block.body);
-  blocks.push(block);
+var Intro = exports.Intro = (function () {
+  function Intro(s, w) {
+    _classCallCheck(this, Intro);
 
-  // Start the block
-  clock = new THREE.Clock(true);
+    scene = s;
+    world = w;
 
-  // Add a nifty title
-  title = $("<div class='title'><h1>TetraTower</h1></div>");
-  $("body").append(title);
-
-  // And the menu
-  menu = $("<div class='menu'></div>");
-  $("body").append(menu);
-
-  menuStart = $("<a href='#start' class='h2' autofocus>Start Game</a>");
-  $(menu).append(menuStart);
-
-  menuHow = $("<a href='#how' class='h2'>How to Play</a>");
-  $(menu).append(menuHow);
-
-  menuCredits = $("<a href='#credits' class='h2'>Credits</a>");
-  $(menu).append(menuCredits);
-};
-
-var update = exports.update = function update(scene, world) {
-
-  // We add new blocks every now and then.
-  elapsed += clock.getDelta();
-  if (elapsed > 0.5 && blocks.length < 10) {
+    // Go ahead and add a single block to the block array.  We'll add more.
     var block = new _blocks.Block();
     block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
     scene.add(block);
     world.addBody(block.body);
     blocks.push(block);
 
-    elapsed = 0;
+    // Start the block
+    clock = new THREE.Clock(true);
+
+    // Add a nifty title
+    title = $("<div class='title'><h1>TetraTower</h1></div>");
+    $("body").append(title);
+
+    // And the menu
+    menu = $("<div class='menu'></div>");
+    $("body").append(menu);
+
+    menuStart = $("<a href='#start' class='h2' autofocus>Start Game</a>");
+    $(menu).append(menuStart);
+    $(menuStart).click(this.startGame);
+
+    menuHow = $("<a href='#how' class='h2'>How to Play</a>");
+    $(menu).append(menuHow);
+
+    menuCredits = $("<a href='#credits' class='h2'>Credits</a>");
+    $(menu).append(menuCredits);
   }
 
-  for (var i = 0; i < blocks.length; i++) {
-    blocks[i].update();
-  }
-};
+  _createClass(Intro, [{
+    key: "update",
+    value: function update() {
+
+      if (stop) {
+        return true;
+      }
+
+      // We add new blocks every now and then.
+      elapsed += clock.getDelta();
+      if (elapsed > 0.5 && blocks.length < 10) {
+        var block = new _blocks.Block();
+        block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
+        scene.add(block);
+        world.addBody(block.body);
+        blocks.push(block);
+
+        elapsed = 0;
+      }
+
+      for (var i = 0; i < blocks.length; i++) {
+        blocks[i].update();
+      }
+
+      return false;
+    }
+
+    // Cleans up all the intro stuff, tells game to start new game
+
+  }, {
+    key: "startGame",
+    value: function startGame() {
+
+      // Remove all the text stuff
+      $(".title").remove();
+      $(".menu").remove();
+
+      // Remove the blocks
+      for (var i = 0; i < blocks.length; i++) {
+        scene.remove(blocks[i]);
+        world.remove(blocks[i].body);
+      }
+
+      stop = true;
+    }
+  }]);
+
+  return Intro;
+})();

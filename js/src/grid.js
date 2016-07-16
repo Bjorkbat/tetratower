@@ -3,8 +3,8 @@
  * having it in the game file
  * * * * */
 
-const GROUND_WIDTH = 50;
-const GRID_SPACING = 2.5;
+const GROUND_WIDTH = 60;
+const GRID_SPACING = 5;
 
 export var Grid = function() {
   THREE.Object3D.call(this);

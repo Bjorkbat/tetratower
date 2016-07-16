@@ -8,8 +8,8 @@ Object.defineProperty(exports, "__esModule", {
  * having it in the game file
  * * * * */
 
-var GROUND_WIDTH = 50;
-var GRID_SPACING = 2.5;
+var GROUND_WIDTH = 60;
+var GRID_SPACING = 5;
 
 var Grid = exports.Grid = function Grid() {
   THREE.Object3D.call(this);
