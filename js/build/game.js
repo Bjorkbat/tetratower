@@ -4,16 +4,21 @@ var _blocks = require('./blocks');
 
 var _grid = require('./grid');
 
+var _intro = require('./intro');
+
+var Intro = _interopRequireWildcard(_intro);
+
 var _physics = require('./physics');
 
 var Physics = _interopRequireWildcard(_physics);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-var scene; /**
-            * Main file.  Handles game state transitions and the like.
-            * * * * */
+/**
+ * Main file.  Handles game state transitions and the like.
+ * * * * */
 
+var scene;
 var renderer;
 var aspect;
 var d;
@@ -29,10 +34,6 @@ var grid;
 var world;
 
 var GROUND_WIDTH = 50;
-var clock;
-
-var sphereBody;
-var blocks = [];
 
 // Sets up the camera, scene, and a simple intro screen
 var init = function init() {
@@ -89,12 +90,8 @@ var init = function init() {
   groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
   world.add(groundBody);
 
-  // Add a test block;
-  var redBlock = new _blocks.Block();
-  redBlock.setPos(0, 50, 0);
-  scene.add(redBlock);
-  world.addBody(redBlock.body);
-  blocks.push(redBlock);
+  // Setup the intro screen
+  Intro.setupIntro(scene, world);
 
   console.log(world);
   render();
@@ -107,7 +104,7 @@ var render = function render() {
   world.step(1 / 20);
 
   // Update everything
-  blocks[0].update();
+  Intro.update(scene, world);
 
   renderer.render(scene, camera);
 };

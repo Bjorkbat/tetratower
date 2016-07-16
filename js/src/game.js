@@ -4,6 +4,7 @@
 
 import {Block} from './blocks';
 import {Grid} from './grid';
+import * as Intro from './intro';
 import * as Physics from './physics';
 
 var scene;
@@ -22,10 +23,6 @@ var grid;
 var world;
 
 const GROUND_WIDTH = 50;
-var clock;
-
-var sphereBody;
-var blocks = [];
 
 // Sets up the camera, scene, and a simple intro screen
 var init = function() {
@@ -89,12 +86,8 @@ var init = function() {
   groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
   world.add(groundBody);
 
-  // Add a test block;
-  var redBlock = new Block();
-  redBlock.setPos(0, 50, 0);
-  scene.add(redBlock);
-  world.addBody(redBlock.body);
-  blocks.push(redBlock);
+  // Setup the intro screen
+  Intro.setupIntro(scene, world);
 
   console.log(world);
   render();
@@ -107,7 +100,7 @@ var render = function() {
   world.step(1/20);
 
   // Update everything
-  blocks[0].update();
+  Intro.update(scene, world);
 
   renderer.render(scene, camera);
 }

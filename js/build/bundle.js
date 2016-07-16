@@ -50,16 +50,21 @@
 
 	var _grid = __webpack_require__(3);
 
+	var _intro = __webpack_require__(4);
+
+	var Intro = _interopRequireWildcard(_intro);
+
 	var _physics = __webpack_require__(2);
 
 	var Physics = _interopRequireWildcard(_physics);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-	var scene; /**
-	            * Main file.  Handles game state transitions and the like.
-	            * * * * */
+	/**
+	 * Main file.  Handles game state transitions and the like.
+	 * * * * */
 
+	var scene;
 	var renderer;
 	var aspect;
 	var d;
@@ -75,10 +80,6 @@
 	var world;
 
 	var GROUND_WIDTH = 50;
-	var clock;
-
-	var sphereBody;
-	var blocks = [];
 
 	// Sets up the camera, scene, and a simple intro screen
 	var init = function init() {
@@ -135,12 +136,8 @@
 	  groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 	  world.add(groundBody);
 
-	  // Add a test block;
-	  var redBlock = new _blocks.Block();
-	  redBlock.setPos(0, 50, 0);
-	  scene.add(redBlock);
-	  world.addBody(redBlock.body);
-	  blocks.push(redBlock);
+	  // Setup the intro screen
+	  Intro.setupIntro(scene, world);
 
 	  console.log(world);
 	  render();
@@ -153,7 +150,7 @@
 	  world.step(1 / 20);
 
 	  // Update everything
-	  blocks[0].update();
+	  Intro.update(scene, world);
 
 	  renderer.render(scene, camera);
 	};
@@ -539,6 +536,57 @@
 	};
 	Grid.prototype = new THREE.Object3D();
 	Grid.prototype.constructor = Grid;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.update = exports.setupIntro = undefined;
+
+	var _blocks = __webpack_require__(1);
+
+	var blocks = []; /**
+	                  * JS for adding an intro screen (and removing it) to the game
+	                  * * * * */
+
+	var clock;
+	var elapsed = 0;
+
+	var setupIntro = exports.setupIntro = function setupIntro(scene, world) {
+
+	  // Go ahead and add a single block to the block array.  We'll add more.
+	  var block = new _blocks.Block();
+	  block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
+	  scene.add(block);
+	  world.addBody(block.body);
+	  blocks.push(block);
+
+	  clock = new THREE.Clock(true);
+	};
+
+	var update = exports.update = function update(scene, world) {
+
+	  // We add new blocks every now and then.
+	  elapsed += clock.getDelta();
+	  if (elapsed > 0.5 && blocks.length < 10) {
+	    var block = new _blocks.Block();
+	    block.setPos(Math.random() * 50 - 25, 50, Math.random() * 50 - 25);
+	    scene.add(block);
+	    world.addBody(block.body);
+	    blocks.push(block);
+
+	    elapsed = 0;
+	  }
+
+	  for (var i = 0; i < blocks.length; i++) {
+	    blocks[i].update();
+	  }
+	};
 
 /***/ }
 /******/ ]);
